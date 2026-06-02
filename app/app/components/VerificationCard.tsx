@@ -71,8 +71,8 @@ export default function VerificationCard({
           <span
             className={`w-2 h-2 rounded-full ${isVerified ? "bg-success" : "bg-danger"}`}
           />
-          <span className="text-xs text-foreground/40">
-            {timeAgo(entry.timestamp)} once
+          <span className="text-xs text-foreground/40" suppressHydrationWarning>
+            {timeAgo(entry.timestamp)} ago
           </span>
           <span className="text-sm font-bold text-foreground/80">
             {shortAddr(entry.agent)}

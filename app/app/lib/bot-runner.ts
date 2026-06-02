@@ -186,11 +186,7 @@ export async function runBot(honest: boolean): Promise<BotResult> {
     )
   );
 
-  // verify
-  const oracleVec = xdr.ScVal.scvVec(
-    [ORACLE_A, ORACLE_B, ORACLE_C].map((a) => new Address(a).toScVal())
-  );
-
+  // verify (oracle addresses read from contract Instance storage — F2 fix)
   const verifyHash = await submitTx(
     agentKp,
     contract.call(
@@ -198,8 +194,7 @@ export async function runBot(honest: boolean): Promise<BotResult> {
       nativeToScVal(intentId, { type: "bytes" }),
       xdr.ScVal.scvBytes(bytes),
       nativeToScVal(claimedPrice, { type: "i128" }),
-      nativeToScVal("XLM_USD", { type: "symbol" }),
-      oracleVec
+      nativeToScVal("XLM_USD", { type: "symbol" })
     )
   );
 

@@ -3,7 +3,7 @@ import { rpc, Networks, Account, Contract, TransactionBuilder, Address, xdr } fr
 export const RPC_URL = "https://soroban-testnet.stellar.org";
 export const NETWORK_PASSPHRASE = Networks.TESTNET;
 export const OORT_CONTRACT_ID =
-  "CD4FHPNNRPZ66Q4GF4JL2CIMYQ3V42AVBHE36E2J42XNDMJW3EFORLSF";
+  "CCGUSOPYBZ3VNWW4AFOEKFFOYMCEBQ2GI3ADEEVFAGBD2GCSAFQXL2LH";
 
 export const server = new rpc.Server(RPC_URL);
 
