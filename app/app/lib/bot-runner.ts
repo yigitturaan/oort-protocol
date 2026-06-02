@@ -137,6 +137,9 @@ function randomIntent(): Buffer {
 export { refreshOracles };
 
 export async function runBot(honest: boolean): Promise<BotResult> {
+  // Refresh oracle prices before every bot run (ensures fresh timestamps)
+  refreshOracles();
+
   const ownerKp = Keypair.random();
   const agentKp = Keypair.random();
   await Promise.all([fund(ownerKp.publicKey()), fund(agentKp.publicKey())]);
