@@ -1,0 +1,23 @@
+{
+  "name": "@oort-protocol/sdk",
+  "version": "0.1.0",
+  "description": "OORT Protocol SDK — AI agent pre-trade claim verification on Stellar/Soroban",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "example": "tsx examples/basic-flow.ts"
+  },
+  "dependencies": {
+    "@stellar/stellar-sdk": "^15.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "tsx": "^4.22.4",
+    "typescript": "^5.7.0",
+    "vitest": "^3.2.0"
+  },
+  "license": "MIT"
+}

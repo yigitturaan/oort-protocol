@@ -1,0 +1,34 @@
+{
+  "testnet": {
+    "networkPassphrase": "Test SDF Network ; September 2015",
+    "horizonUrl": "https://horizon-testnet.stellar.org",
+    "sorobanRpcUrl": "https://soroban-testnet.stellar.org",
+    "friendbotUrl": "https://friendbot.stellar.org",
+    "explorerUrl": "https://stellar.expert/explorer/testnet",
+    "deployer": "oort-deployer",
+    "deployerAddress": "GBLTFE4S5QHT7DS6JABLGNZAYLYLKLYNIBXLYLF4GV6TBGDNVMARDRL3",
+    "contracts": {
+      "oortCore": "CD4FHPNNRPZ66Q4GF4JL2CIMYQ3V42AVBHE36E2J42XNDMJW3EFORLSF",
+      "oracleA": "CDK63ZS6RQGSFCJ3IIOQ3WLNORQTNIKWIJQ4UZ2L6MVZQ437K3USDUIZ",
+      "oracleB": "CCYCE3BQSJMW2SD7WPQDRZYYUKONY6KV6ZIIE4X4XWQYDXNNKCMOFU6Z",
+      "oracleC": "CCK2TATLSSY5ANJ2RT7FUVUN542UMDE3SAZL5RQUJ7GZMJXMW7R3ZOZL"
+    },
+    "assets": {
+      "xlm": {
+        "sacAddress": "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
+        "decimals": 7
+      },
+      "usdc": {
+        "issuer": "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5",
+        "sacAddress": "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA",
+        "decimals": 6
+      }
+    }
+  },
+  "mainnet": {
+    "networkPassphrase": "Public Global Stellar Network ; September 2015",
+    "horizonUrl": "https://horizon.stellar.org",
+    "sorobanRpcUrl": "(ecosystem provider gerekli)",
+    "explorerUrl": "https://stellar.expert/explorer/public"
+  }
+}

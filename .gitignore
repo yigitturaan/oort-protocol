@@ -1,0 +1,52 @@
+# Rust
+target/
+**/*.rs.bk
+Cargo.lock
+
+# WASM build artifacts
+*.wasm
+*.optimized.wasm
+
+# Node.js
+node_modules/
+.npm
+.yarn/
+.pnp.*
+
+# Next.js
+.next/
+out/
+
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+*.secret
+*.seed
+
+# Stellar identity (never commit keys)
+.stellar/
+stellar-identity/
+
+# Claude Code
+.claude/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build / misc
+dist/
+build/
+*.log
+.vercel
+.turbo

@@ -1,0 +1,19 @@
+{
+  "name": "@oort-protocol/bots",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OORT Protocol demo bots — HonestBot & LiarBot",
+  "scripts": {
+    "honest": "tsx honest-bot.ts",
+    "liar": "tsx liar-bot.ts"
+  },
+  "dependencies": {
+    "@oort-protocol/sdk": "file:../sdk",
+    "@stellar/stellar-sdk": "^15.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "tsx": "^4.22.4",
+    "typescript": "^5.7.0"
+  }
+}

@@ -1,0 +1,26 @@
+[workspace]
+resolver = "2"
+members = [
+    "contracts/oort-core",
+    "contracts/oort-price-verifier",
+    "contracts/oort-mock-oracle",
+]
+
+[profile.release]
+opt-level = "z"
+overflow-checks = true
+debug = 0
+strip = "symbols"
+debug-assertions = false
+panic = "abort"
+codegen-units = 1
+lto = true
+
+[profile.release.package.oort-core]
+inherits = "release"
+
+[profile.release.package.oort-price-verifier]
+inherits = "release"
+
+[profile.release.package.oort-mock-oracle]
+inherits = "release"
