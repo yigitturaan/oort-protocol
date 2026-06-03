@@ -63,12 +63,12 @@ async function submitTx(signer: Keypair, op: xdr.Operation): Promise<string> {
   const sent = await server.sendTransaction(prepared);
   if (sent.status === "ERROR") throw new Error("Send error");
 
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < 60; i++) {
     const resp = await server.getTransaction(sent.hash);
     if (resp.status === rpc.Api.GetTransactionStatus.SUCCESS) return sent.hash;
     if (resp.status === rpc.Api.GetTransactionStatus.FAILED)
       throw new Error("Tx failed");
-    await new Promise((r) => setTimeout(r, 2000));
+    await new Promise((r) => setTimeout(r, 1000));
   }
   throw new Error("Tx timeout");
 }
@@ -108,25 +108,54 @@ function me(key: string, val: xdr.ScVal): xdr.ScMapEntry {
   });
 }
 
-function refreshOracles(): void {
+let deployerKp: Keypair | null = null;
+function getDeployer(): Keypair {
+  if (deployerKp) return deployerKp;
+  const secret = process.env.DEPLOYER_SECRET;
+  if (secret) {
+    deployerKp = Keypair.fromSecret(secret.trim());
+    return deployerKp;
+  }
+  // Fallback: local CLI (dev only)
   try {
     const { execSync } = require("child_process");
-    const now = Math.floor(Date.now() / 1000);
-    const pp = "Test SDF Network ; September 2015";
-    const ru = "https://soroban-testnet.stellar.org";
-    for (const [id, price] of [
-      [ORACLE_A, "12100000000000"],
-      [ORACLE_B, "12100000000000"],
-      [ORACLE_C, "12000000000000"],
-    ]) {
-      execSync(
-        `stellar contract invoke --id ${id} --source-account oort-deployer --network-passphrase "${pp}" --rpc-url ${ru} -- set_price --asset '{"Other":"XLM_USD"}' --price ${price} --timestamp ${now}`,
-        { stdio: "pipe", timeout: 30000 }
-      );
-    }
+    const out = execSync("stellar keys show oort-deployer", { encoding: "utf-8", timeout: 5000 }).trim();
+    deployerKp = Keypair.fromSecret(out);
+    return deployerKp;
   } catch {
-    // non-fatal for demo
+    throw new Error("DEPLOYER_SECRET env var not set and stellar CLI not available");
   }
+}
+
+async function refreshOneOracle(deployer: Keypair, oracleId: string, price: string, timestamp: number) {
+  try {
+    const oracle = new Contract(oracleId);
+    const assetScVal = xdr.ScVal.scvVec([
+      xdr.ScVal.scvSymbol("Other"),
+      xdr.ScVal.scvSymbol("XLM_USD"),
+    ]);
+    await submitTx(
+      deployer,
+      oracle.call(
+        "set_price",
+        assetScVal,
+        nativeToScVal(BigInt(price), { type: "i128" }),
+        nativeToScVal(BigInt(timestamp), { type: "u64" }),
+      )
+    );
+  } catch {
+    // non-fatal
+  }
+}
+
+async function refreshOracles() {
+  const deployer = getDeployer();
+  const now = Math.floor(Date.now() / 1000);
+  await Promise.all([
+    refreshOneOracle(deployer, ORACLE_A, "12100000000000", now),
+    refreshOneOracle(deployer, ORACLE_B, "12100000000000", now),
+    refreshOneOracle(deployer, ORACLE_C, "12000000000000", now),
+  ]);
 }
 
 function randomIntent(): Buffer {
@@ -136,13 +165,16 @@ function randomIntent(): Buffer {
 
 export { refreshOracles };
 
-export async function runBot(honest: boolean): Promise<BotResult> {
-  // Refresh oracle prices before every bot run (ensures fresh timestamps)
-  refreshOracles();
-
+export async function runBot(honest: boolean, opts?: { skipOracles?: boolean }): Promise<BotResult> {
   const ownerKp = Keypair.random();
   const agentKp = Keypair.random();
-  await Promise.all([fund(ownerKp.publicKey()), fund(agentKp.publicKey())]);
+
+  const tasks: Promise<any>[] = [
+    fund(ownerKp.publicKey()),
+    fund(agentKp.publicKey()),
+  ];
+  if (!opts?.skipOracles) tasks.push(refreshOracles());
+  await Promise.all(tasks);
 
   const contract = new Contract(OORT_CONTRACT_ID);
   const ledger = (await server.getLatestLedger()).sequence;
@@ -189,7 +221,7 @@ export async function runBot(honest: boolean): Promise<BotResult> {
     )
   );
 
-  // verify (oracle addresses read from contract Instance storage — F2 fix)
+  // verify
   const verifyHash = await submitTx(
     agentKp,
     contract.call(

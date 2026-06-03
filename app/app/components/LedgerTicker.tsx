@@ -14,7 +14,7 @@ export default function LedgerTicker() {
         const seq = await getLatestLedger();
         if (active) setLedger(seq);
       } catch {
-        // RPC hiccup — keep last value
+        // keep last value
       }
     }
 
@@ -27,7 +27,7 @@ export default function LedgerTicker() {
   }, []);
 
   return (
-    <span className="text-accent tabular-nums">
+    <span className="tabular-nums text-foreground-muted">
       {ledger !== null ? `#${ledger.toLocaleString()}` : "..."}
     </span>
   );

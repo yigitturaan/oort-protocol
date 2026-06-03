@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
-import { Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -8,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "OORT Terminal",
+  title: "OORT Protocol — Trust No Agent, Verify Every Claim",
   description:
-    "AI agent pre-trade claim verification on Stellar/Soroban",
+    "AI agent pre-trade claim verification & escrow protection on Stellar/Soroban",
 };
 
 export default function RootLayout({
@@ -19,9 +24,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistMono.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-background text-foreground">
-        {children}
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+    >
+      <body className="min-h-full flex flex-col">
+        <div className="atmosphere" aria-hidden="true" />
+        <div className="grain" aria-hidden="true" />
+        <div className="relative z-10 flex flex-col min-h-full">
+          {children}
+        </div>
       </body>
     </html>
   );

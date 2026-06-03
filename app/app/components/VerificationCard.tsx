@@ -1,3 +1,6 @@
+"use client";
+
+import { motion } from "framer-motion";
 import type { VerificationEntry } from "../lib/events";
 
 function shortAddr(addr: string): string {
@@ -6,12 +9,20 @@ function shortAddr(addr: string): string {
 
 function timeAgo(ts: string): string {
   const diff = Math.floor((Date.now() - new Date(ts).getTime()) / 1000);
-  if (diff < 60) return `${diff}sn`;
-  if (diff < 3600) return `${Math.floor(diff / 60)}dk`;
-  return `${Math.floor(diff / 3600)}sa`;
+  if (diff < 60) return `${diff}s`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}m`;
+  return `${Math.floor(diff / 3600)}h`;
 }
 
 type LayerStatus = "pass" | "fail" | "skip";
+
+function LayerDot({ status }: { status: LayerStatus }) {
+  if (status === "pass")
+    return <span className="w-4 h-4 rounded-full bg-success/15 text-success flex items-center justify-center text-[10px]">&#10003;</span>;
+  if (status === "fail")
+    return <span className="w-4 h-4 rounded-full bg-danger/15 text-danger flex items-center justify-center text-[10px]">&#10005;</span>;
+  return <span className="w-4 h-4 rounded-full bg-foreground-muted/10 text-foreground-muted flex items-center justify-center text-[10px]">—</span>;
+}
 
 function LayerRow({
   label,
@@ -22,27 +33,23 @@ function LayerRow({
   status: LayerStatus;
   detail?: string;
 }) {
-  const icon = status === "pass" ? "✅" : status === "fail" ? "❌" : "⏭️";
   return (
-    <div className="flex items-center gap-2 text-xs">
-      <span className="w-4 text-center">{icon}</span>
-      <span className="text-foreground/50 w-36">{label}</span>
-      {detail && (
-        <span className="text-foreground/40">{detail}</span>
-      )}
+    <div className="flex items-center gap-2.5 text-xs">
+      <LayerDot status={status} />
+      <span className="text-foreground-muted w-32">{label}</span>
+      {detail && <span className="text-foreground-muted/70 font-mono">{detail}</span>}
     </div>
   );
 }
 
 export default function VerificationCard({
   entry,
+  index = 0,
 }: {
   entry: VerificationEntry;
+  index?: number;
 }) {
   const isVerified = entry.type === "verified";
-  const borderColor = isVerified ? "border-success/40" : "border-danger/40";
-  const bgColor = isVerified ? "bg-success/5" : "bg-danger/5";
-
   const deviationPct = (entry.deviationBps / 100).toFixed(1);
   const amountXlm = (Number(entry.amount) / 1e7).toFixed(1);
 
@@ -56,85 +63,78 @@ export default function VerificationCard({
 
   const oracleDetail =
     entry.oracleVerdict === "Passed"
-      ? `%${deviationPct} sapma`
+      ? `${deviationPct}% deviation`
       : entry.oracleVerdict === "SoftReject"
-        ? `%${deviationPct} sapma (SOFT)`
-        : `%${deviationPct} sapma (HARD)`;
+        ? `${deviationPct}% (soft)`
+        : `${deviationPct}% (hard reject)`;
 
   return (
-    <div
-      className={`rounded-lg border ${borderColor} ${bgColor} p-4 space-y-3`}
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05, duration: 0.4, ease: [0.19, 1, 0.22, 1] }}
+      className={`rounded-2xl border bg-surface p-5 space-y-4 card-hover ${
+        isVerified ? "border-accent/20 glow-success" : "border-danger/20 glow-danger"
+      }`}
     >
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <span
             className={`w-2 h-2 rounded-full ${isVerified ? "bg-success" : "bg-danger"}`}
           />
-          <span className="text-xs text-foreground/40" suppressHydrationWarning>
-            {timeAgo(entry.timestamp)} ago
-          </span>
-          <span className="text-sm font-bold text-foreground/80">
+          <span className="text-sm font-medium text-foreground">
             {shortAddr(entry.agent)}
           </span>
+          <span className="text-xs text-foreground-muted font-mono" suppressHydrationWarning>
+            {timeAgo(entry.timestamp)} ago
+          </span>
         </div>
-        <span className="text-sm font-mono text-foreground/60">
+        <span className="text-sm font-mono text-foreground-muted">
           {amountXlm} XLM
         </span>
       </div>
 
       {/* Verification layers */}
-      <div className="space-y-1 pl-1">
-        <LayerRow label="Hash eslesmesi" status={hashStatus} />
-        <LayerRow
-          label="Oracle kontrolu"
-          status={oracleStatus}
-          detail={oracleDetail}
-        />
-        <LayerRow label="Footprint kontrolu" status={footprintStatus} />
-        <LayerRow label="Politika uyumu" status={policyStatus} />
+      <div className="space-y-1.5">
+        <LayerRow label="Hash match" status={hashStatus} />
+        <LayerRow label="Oracle check" status={oracleStatus} detail={oracleDetail} />
+        <LayerRow label="Footprint check" status={footprintStatus} />
+        <LayerRow label="Policy compliance" status={policyStatus} />
       </div>
 
       {/* Result */}
-      <div className="flex items-center justify-between pt-1 border-t border-border">
+      <div className="flex items-center justify-between pt-3 border-t border-border">
         <div className="flex items-center gap-2">
-          {isVerified ? (
-            <span className="text-success text-sm font-bold">
-              DOGRULANDI
-            </span>
-          ) : (
-            <span className="text-danger text-sm font-bold">
-              REDDEDILDI
-            </span>
-          )}
-          {isVerified ? (
-            <span className="text-xs text-foreground/40">
-              → fonlar gonderildi
-            </span>
-          ) : (
-            <span className="text-xs text-foreground/40">
-              → fonlar iade edildi
-              {entry.slashAmount > BigInt(0) &&
-                ` | ${(Number(entry.slashAmount) / 1e7).toFixed(0)} XLM slash`}
-            </span>
-          )}
+          <span
+            className={`text-xs font-bold uppercase tracking-wide ${
+              isVerified ? "text-success" : "text-danger"
+            }`}
+          >
+            {isVerified ? "Verified" : "Rejected"}
+          </span>
+          <span className="text-xs text-foreground-muted">
+            {isVerified
+              ? "— funds released"
+              : `— funds returned${
+                  entry.slashAmount > BigInt(0)
+                    ? ` | ${(Number(entry.slashAmount) / 1e7).toFixed(0)} XLM slashed`
+                    : ""
+                }`}
+          </span>
         </div>
         {entry.reputation && (
           <span
-            className={`text-xs font-mono ${
+            className={`text-xs font-mono font-medium ${
               entry.reputation.newScore > entry.reputation.oldScore
                 ? "text-success"
                 : "text-danger"
             }`}
           >
-            {entry.reputation.oldScore} → {entry.reputation.newScore} (
-            {entry.reputation.newScore - entry.reputation.oldScore > 0
-              ? "+"
-              : ""}
-            {entry.reputation.newScore - entry.reputation.oldScore})
+            {entry.reputation.oldScore} → {entry.reputation.newScore}
           </span>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

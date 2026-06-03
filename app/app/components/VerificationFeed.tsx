@@ -86,47 +86,33 @@ export default function VerificationFeed({
 
   const totalVerified = entries.filter((e) => e.type === "verified").length;
   const totalRejected = entries.filter((e) => e.type === "rejected").length;
-  const successRate =
-    entries.length > 0
-      ? ((totalVerified / entries.length) * 100).toFixed(1)
-      : "0";
 
   return (
-    <section className="space-y-4">
-      {/* Header */}
+    <section className="space-y-5">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold text-foreground/80">
-          Canli Dogrulama Akisi
+        <h2 className="text-xl font-bold text-foreground tracking-tight">
+          Verification Feed
         </h2>
-        <div className="flex items-center gap-4 text-xs text-foreground/50">
-          <span>
-            Toplam: {entries.length} dogrulama
-          </span>
-          <span className="text-success">
-            Basarili: {totalVerified}
-          </span>
-          <span className="text-danger">
-            Red: {totalRejected}
-          </span>
-          <span>(%{successRate})</span>
+        <div className="flex items-center gap-4 text-xs text-foreground-muted font-mono">
+          <span className="text-success">{totalVerified} passed</span>
+          <span className="text-danger">{totalRejected} rejected</span>
           {liveCount > 0 && (
-            <span className="px-2 py-0.5 rounded bg-accent-dim text-accent animate-pulse">
-              {liveCount} canli
+            <span className="px-2 py-0.5 rounded-full bg-accent-bg text-accent text-[10px] font-medium animate-pulse">
+              {liveCount} live
             </span>
           )}
         </div>
       </div>
 
-      {/* Cards */}
       <div className="space-y-3">
-        {entries.map((entry) => (
-          <VerificationCard key={entry.id} entry={entry} />
+        {entries.map((entry, i) => (
+          <VerificationCard key={entry.id} entry={entry} index={i} />
         ))}
       </div>
 
       {entries.length === 0 && (
-        <div className="text-center text-foreground/30 py-12">
-          Dogrulama bekleniyor...
+        <div className="text-center text-foreground-muted py-16 text-sm">
+          Waiting for verifications...
         </div>
       )}
     </section>

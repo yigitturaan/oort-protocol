@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import NumberTicker from "./ui/NumberTicker";
 import {
   fetchReputation,
   discoverAgentsFromEvents,
@@ -33,12 +35,11 @@ const DEMO_AGENTS: ReputationData[] = [
 ];
 
 function shortAddr(addr: string): string {
-  return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+  return `${addr.slice(0, 4)}...${addr.slice(-4)}`;
 }
 
 function formatXlm(val: bigint): string {
   const n = Number(val) / 1e7;
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
   return n.toFixed(0);
 }
@@ -55,7 +56,6 @@ export default function ReputationTable({
       const ledger = await getLatestLedger();
       const start = Math.max(0, ledger - 2000);
       const discovered = await discoverAgentsFromEvents(start);
-
       if (discovered.length === 0) return;
 
       const results = await Promise.all(
@@ -83,103 +83,121 @@ export default function ReputationTable({
   const blockedCount = entries.filter((e) => e.type === "rejected").length;
 
   return (
-    <section className="space-y-4">
-      <h2 className="text-lg font-bold text-foreground/80">
-        Ajan Itibar Tablosu
-      </h2>
+    <section id="reputation" className="h-full flex items-center px-6 py-8">
+      <div className="max-w-3xl mx-auto space-y-8 w-full">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center space-y-3"
+        >
+          <h2
+            className="font-bold text-foreground tracking-tight"
+            style={{ fontSize: "clamp(1.8rem, 1rem + 3vw, 3rem)" }}
+          >
+            Agent Scoreboard
+          </h2>
+          <p className="text-foreground-muted text-lg max-w-md mx-auto">
+            Every agent builds a reputation on-chain. Honest agents thrive. Liars get banned.
+          </p>
+        </motion.div>
 
-      {/* Table */}
-      <div className="overflow-x-auto rounded-lg border border-border">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-surface text-foreground/50 text-xs uppercase tracking-wider">
-              <th className="px-4 py-2 text-left">#</th>
-              <th className="px-4 py-2 text-left">Ajan</th>
-              <th className="px-4 py-2 text-right">Puan</th>
-              <th className="px-4 py-2 text-right">Dogrulama</th>
-              <th className="px-4 py-2 text-right">Basari</th>
-              <th className="px-4 py-2 text-right">Hacim</th>
-              <th className="px-4 py-2 text-right">Stake</th>
-            </tr>
-          </thead>
-          <tbody>
-            {agents.map((agent, idx) => {
-              const successRate =
-                agent.totalVerifications > 0
-                  ? (
-                      (agent.passed / agent.totalVerifications) *
-                      100
-                    ).toFixed(1)
-                  : "—";
-
-              const scoreColor =
-                agent.score >= 1000
-                  ? "text-success"
-                  : agent.score >= 500
-                    ? "text-foreground"
-                    : "text-danger";
-
-              return (
-                <tr
-                  key={agent.agent}
-                  className={`border-t border-border ${
-                    agent.isBanned ? "opacity-50 line-through" : ""
-                  }`}
-                >
-                  <td className="px-4 py-2 text-foreground/40">
-                    {agent.isBanned ? "BAN" : `#${idx + 1}`}
-                  </td>
-                  <td className="px-4 py-2 font-mono">
-                    {agent.isBanned && (
-                      <span className="text-danger mr-1">██</span>
-                    )}
-                    {shortAddr(agent.agent)}
-                  </td>
-                  <td className={`px-4 py-2 text-right font-bold ${scoreColor}`}>
-                    {agent.score}
-                  </td>
-                  <td className="px-4 py-2 text-right text-foreground/60">
-                    {agent.totalVerifications}
-                  </td>
-                  <td className="px-4 py-2 text-right text-foreground/60">
-                    %{successRate}
-                  </td>
-                  <td className="px-4 py-2 text-right text-foreground/60">
-                    {formatXlm(agent.totalVolume)} XLM
-                  </td>
-                  <td className="px-4 py-2 text-right text-foreground/60">
-                    {formatXlm(agent.stake)} XLM
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Metrics */}
-      <div className="flex gap-6 pt-2">
-        <div className="flex-1 rounded-lg border border-border bg-surface p-4 text-center">
-          <div className="text-2xl font-bold text-accent">
-            {totalProtected.toFixed(0)} XLM
-          </div>
-          <div className="text-xs text-foreground/40 mt-1">
-            Toplam Korunan Fon
-          </div>
+        {/* Metrics */}
+        <div className="grid grid-cols-3 gap-4">
+          <MetricCard value={`${totalProtected.toFixed(0)} XLM`} label="Protected" delay={0} />
+          <MetricCard value={String(blockedCount)} label="Blocked" delay={0.1} />
+          <MetricCard value={String(agents.length)} label="Agents" delay={0.2} />
         </div>
-        <div className="flex-1 rounded-lg border border-border bg-surface p-4 text-center">
-          <div className="text-2xl font-bold text-danger">{blockedCount}</div>
-          <div className="text-xs text-foreground/40 mt-1">
-            Engellenen Kotu Islem
-          </div>
-        </div>
-        <div className="flex-1 rounded-lg border border-border bg-surface p-4 text-center">
-          <div className="text-2xl font-bold text-success">{agents.length}</div>
-          <div className="text-xs text-foreground/40 mt-1">
-            Kayitli Ajan
-          </div>
+
+        {/* Agent cards */}
+        <div className="space-y-3">
+          {agents.map((agent, idx) => {
+            const isGood = agent.score >= 1000;
+            const successRate =
+              agent.totalVerifications > 0
+                ? ((agent.passed / agent.totalVerifications) * 100).toFixed(0)
+                : "—";
+
+            return (
+              <motion.div
+                key={agent.agent}
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.08, duration: 0.4 }}
+                className={`rounded-2xl border bg-surface p-5 flex flex-col sm:flex-row sm:items-center gap-4 card-hover ${
+                  agent.isBanned
+                    ? "border-danger/20 opacity-60"
+                    : isGood
+                      ? "border-accent/15"
+                      : "border-border"
+                }`}
+              >
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                    agent.isBanned ? "bg-danger" : isGood ? "bg-accent" : "bg-foreground-muted"
+                  }`} />
+                  <div className="min-w-0">
+                    <div className="text-sm font-mono text-foreground truncate">
+                      {shortAddr(agent.agent)}
+                    </div>
+                    <div className="text-xs text-foreground-muted">
+                      {agent.isBanned ? "Banned" : isGood ? "Trusted" : "Under watch"}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-6 text-center">
+                  <div>
+                    <div className={`text-lg font-bold font-mono ${isGood ? "text-accent" : "text-danger"}`}>
+                      {agent.score}
+                    </div>
+                    <div className="text-[10px] text-foreground-muted uppercase tracking-wider">Score</div>
+                  </div>
+                  <div>
+                    <div className="text-lg font-bold font-mono text-foreground">{successRate}%</div>
+                    <div className="text-[10px] text-foreground-muted uppercase tracking-wider">Pass</div>
+                  </div>
+                  <div>
+                    <div className="text-lg font-bold font-mono text-foreground">{formatXlm(agent.stake)}</div>
+                    <div className="text-[10px] text-foreground-muted uppercase tracking-wider">Stake</div>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>
+  );
+}
+
+function MetricCard({
+  value,
+  label,
+  delay,
+}: {
+  value: string;
+  label: string;
+  delay: number;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay, duration: 0.5 }}
+      className="stat-card"
+    >
+      <div className="text-2xl font-bold text-foreground font-mono">
+        {/^\d+$/.test(value) ? (
+          <NumberTicker value={parseInt(value)} />
+        ) : (
+          value
+        )}
+      </div>
+      <div className="text-xs text-foreground-muted mt-1">{label}</div>
+    </motion.div>
   );
 }

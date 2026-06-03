@@ -1,25 +1,40 @@
 @import "tailwindcss";
 
 :root {
-  --background: #030712;
-  --foreground: #e5e7eb;
-  --accent: #22d3ee;
-  --accent-dim: #164e63;
-  --danger: #ef4444;
-  --success: #22c55e;
-  --surface: #111827;
-  --border: #1f2937;
+  --background: #F6F1EB;
+  --background-deep: #EDE7DF;
+  --foreground: #1A1714;
+  --foreground-muted: #8C8279;
+  --accent: #0D6B4F;
+  --accent-light: #10896A;
+  --accent-bg: rgba(13, 107, 79, 0.08);
+  --danger: #C93B3B;
+  --danger-bg: rgba(201, 59, 59, 0.07);
+  --success: #0D6B4F;
+  --success-bg: rgba(13, 107, 79, 0.07);
+  --surface: #FFFFFF;
+  --surface-elevated: #FDFBF8;
+  --border: #E2DCD4;
+  --border-strong: #D1C9BE;
+  --shadow-color: rgba(26, 23, 20, 0.06);
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-background-deep: var(--background-deep);
   --color-foreground: var(--foreground);
+  --color-foreground-muted: var(--foreground-muted);
   --color-accent: var(--accent);
-  --color-accent-dim: var(--accent-dim);
+  --color-accent-light: var(--accent-light);
+  --color-accent-bg: var(--accent-bg);
   --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
   --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
   --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -27,10 +42,112 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
 }
 
 ::selection {
-  background: var(--accent-dim);
-  color: var(--accent);
+  background: rgba(13, 107, 79, 0.15);
+  color: var(--foreground);
+}
+
+.select-text ::selection {
+  background: rgba(212, 165, 116, 0.3);
+  color: #e5ddd4;
+}
+.select-text * {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+.atmosphere {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 0%, rgba(13, 107, 79, 0.04) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 80% 10%, rgba(180, 140, 80, 0.04) 0%, transparent 70%),
+    radial-gradient(ellipse 70% 50% at 50% 100%, rgba(13, 107, 79, 0.03) 0%, transparent 60%);
+}
+
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.3;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.5'/%3E%3C/svg%3E");
+  background-size: 256px 256px;
+}
+
+@keyframes shimmer {
+  0%, 90%, 100% {
+    background-position: -200% 0;
+  }
+  60% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card-hover {
+  transition: box-shadow 0.4s cubic-bezier(0.19,1,0.22,1), transform 0.4s cubic-bezier(0.19,1,0.22,1), border-color 0.3s ease;
+}
+.card-hover:hover {
+  box-shadow: 0 12px 40px var(--shadow-color);
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.stat-card:hover {
+  border-color: var(--border-strong);
+  box-shadow: 0 4px 20px var(--shadow-color);
+}
+
+.glow-success {
+  box-shadow: 0 0 0 1px rgba(13, 107, 79, 0.12), 0 8px 30px rgba(13, 107, 79, 0.06);
+}
+.glow-danger {
+  box-shadow: 0 0 0 1px rgba(201, 59, 59, 0.12), 0 8px 30px rgba(201, 59, 59, 0.06);
+}
+
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+}
+
+.snap-container {
+  height: 100vh;
+  overflow-y: auto;
+  scroll-snap-type: y proximity;
+  scroll-behavior: smooth;
+}
+
+.snap-section {
+  scroll-snap-align: start;
+  height: 100vh;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
 }

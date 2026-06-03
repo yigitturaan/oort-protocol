@@ -60,7 +60,7 @@ export default function WalletButton() {
     <button
       onClick={address ? disconnect : connect}
       disabled={connecting}
-      className="px-4 py-1.5 rounded border border-border text-sm font-mono
+      className="px-4 py-1.5 rounded-full border border-border text-sm font-mono
                  hover:border-accent hover:text-accent transition-colors
                  disabled:opacity-50 cursor-pointer"
     >
